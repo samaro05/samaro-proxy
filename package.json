@@ -1,0 +1,8 @@
+{
+  "name": "samaro-proxy",
+  "version": "1.0.0",
+  "description": "Reverse proxy for the Samaro dashboard (replaces the PHP proxy)",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}
