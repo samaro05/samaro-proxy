@@ -5,11 +5,11 @@ const https = require('node:https');
 
 const BOT_API_URL  = (process.env.BOT_API_URL || '').replace(/\/+$/, '');
 const SECRET       = process.env.PROXY_SECRET || '';
-const PUBLIC_HOST  = process.env.PUBLIC_HOST || '';   // the public domain of THIS proxy
+const PUBLIC_HOST  = process.env.PUBLIC_HOST || '';   // optional fallback; the real Host of each request is used
 const PORT         = Number(process.env.PORT || 3000);
 
-if (!/^https?:\/\/[^/]+$/i.test(BOT_API_URL) || SECRET.length < 40 || !PUBLIC_HOST) {
-  console.error('Set BOT_API_URL (e.g. http://5.39.63.207:6346), PROXY_SECRET (40+ chars) and PUBLIC_HOST.');
+if (!/^https?:\/\/[^/]+$/i.test(BOT_API_URL) || SECRET.length < 40) {
+  console.error('Set BOT_API_URL (e.g. http://5.39.63.207:6346) and PROXY_SECRET (40+ chars).');
   process.exit(1);
 }
 const target = new URL(BOT_API_URL);
@@ -41,7 +41,8 @@ http.createServer(async (req, res) => {
 
   const headers = {};
   for (const [k, v] of Object.entries(req.headers)) if (!HOP.has(k) && k !== 'host' && k !== 'x-samaro-proxy-secret') headers[k] = v;
-  headers['host'] = PUBLIC_HOST;
+  // Forward the Host the browser really used, so the dashboard's Origin check (Origin host == Host) always matches.
+  headers['host'] = req.headers.host || PUBLIC_HOST;
   headers['x-samaro-proxy-secret'] = SECRET;
   headers['x-forwarded-for'] = req.socket.remoteAddress || '';
   headers['x-forwarded-proto'] = 'https';
